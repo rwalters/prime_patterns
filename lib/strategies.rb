@@ -4,4 +4,16 @@ module Strategies
       return number == 2
     end
   end
+
+  class LessThanTwo
+    def check(number)
+      return number < 2
+    end
+  end
+
+  class IsEven
+    def check(number)
+      return number.even?
+    end
+  end
 end

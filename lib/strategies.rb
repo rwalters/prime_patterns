@@ -13,7 +13,7 @@ module Strategies
 
   class IsEven
     def check(number)
-      return number.even?
+      return number != 2 && number.even?
     end
   end
 end

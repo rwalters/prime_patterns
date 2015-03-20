@@ -6,7 +6,6 @@ class PrimeByStrategy
   end
 
   def is_prime?(strategy)
-    return false if strategy.check(number)
-    return true
+    return strategy.check(number)
   end
 end

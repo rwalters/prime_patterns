@@ -23,6 +23,7 @@ I created a simple method of discovering if a number is a prime.  I just have a 
     end
 
     return true
+  end
 ```
 
 I used [TDD](http://en.wikipedia.org/wiki/Test-driven_development) to build even this simple solution. [The spec file](https://github.com/rwalters/prime_patterns/blob/master/spec/prime_naive_spec.rb) is straightforward, and has a lot of room for improvement to [DRY it up](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself), but that can be an exercise for a different article.
@@ -42,5 +43,24 @@ Except, that is, for the first check on whether the input is 2.  If we remove th
   end
 ```
 
+Which makes sense. We return false if the input is even: `return false if input.even?` We just change that, and the spec passes. So now we have the naive solution of
 
-everything still works, since the two will fall through
+```ruby
+  def is_prime?(input)
+    return false if input < 2
+    return false if input > 2 && input.even?
+
+    sqrt = Math.sqrt(input)
+    return false if sqrt == sqrt.floor
+
+    (3..(sqrt.floor)).each do |i|
+      return false if (input%i).zero?
+    end
+
+    return true
+  end
+```
+
+Everything is consistent now, we return false if a given check is true, otherwise we move on to the next check.  A little confusing, perhaps, to return false if something is true, but just remember that each rule is a way that a number is *not* prime. Once we exhaust those checks, we can be comfortable stating that the input is a prime number.
+
+

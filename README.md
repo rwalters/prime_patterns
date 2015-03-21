@@ -7,16 +7,40 @@ Sandi's example about the rhyme was great, and I'm not going to attempt to impro
 
 ## Naive Prime Solution
 
-I created a simple method of discovering if a number is a prime.  I just have a series of rules that perform a series of checks through guard clauses. For example, since [a prime number is greater than 1](http://en.wikipedia.org/wiki/Prime_number), if an input is less than 2, [I return false](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L4). Similarly, since 2 is prime, [I have a check to return true for that input](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L3).
+I created a simple method of discovering if a number is a prime.  I just have a series of rules that perform a series of checks through guard clauses. For example, since 2 is prime, [I have a check to return true for that input](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L3), and since a prime number [has to be greater than 1](http://en.wikipedia.org/wiki/Prime_number), if an input is less than 2, [I return false](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L4). There are then other checks on what is not a prime before we just return true, since the input must be a prime at that point.
 
-```
+```ruby
   def is_prime?(input)
-    return true if input == 2
+    return true  if input == 2
     return false if input < 2
+    return false if input.even?
+
+    sqrt = Math.sqrt(input)
+    return false if sqrt == sqrt.floor
+
+    (3..(sqrt.floor)).each do |i|
+      return false if (input%i).zero?
+    end
+
+    return true
 ```
 
 I used [TDD](http://en.wikipedia.org/wiki/Test-driven_development) to build even this simple solution. [The spec file](https://github.com/rwalters/prime_patterns/blob/master/spec/prime_naive_spec.rb) is straightforward, and has a lot of room for improvement to [DRY it up](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself), but that can be an exercise for a different article.
 
 ## Strategy Pattern
 
-With the naive solution now available, we can move those rules into individual strategies we can go through in a sequence.  This will allow us to update the strategies independently from the rest of the code.
+With the naive solution now available, we can move those rules into individual strategies to be processed sequentially.  This will allow us to update the strategies or add new ones independently from the rest of the code.
+
+Looking over the list of steps, something stands out. Each guard clause consists of a `return false if` statement, with a final `return true` to mark a number as prime after we've exhausted the checks for numbers that aren't prime.
+
+Except, that is, for the first check on whether the input is 2.  If we remove that, a spec fails
+
+```ruby
+  context "for input of 2" do
+    let(:input) { 2 }
+    it { is_expected.to be_truthy }
+  end
+```
+
+
+everything still works, since the two will fall through

@@ -61,6 +61,64 @@ Which makes sense. We return false if the input is even: `return false if input.
   end
 ```
 
-Everything is consistent now, we return false if a given check is true, otherwise we move on to the next check.  A little confusing, perhaps, to return false if something is true, but just remember that each rule is a way that a number is *not* prime. Once we exhaust those checks, we can be comfortable stating that the input is a prime number.
+Everything is consistent now, we return false if a given check is true, otherwise we move on to the next check.  I'm not comfortable returning false if a check is true, it could be confusing to a developer coming along in the future, but I'll shelve that concern for now. We can perhaps make this a little more obvious later with appropriate naming.
+
+### Converting to a Strategy
+
+We can start by moving the first check into a strategy, and calling it directly.
+
+```
+module Strategies
+  class LessThanTwo
+    def check(number)
+      return number < 2
+    end
+  end
+```
+
+```
+  def is_prime?(input)
+    return false if Strategies::LessThanTwo.new.check(input)
+```
+
+Since I had used tests to check the original version, it's easy to verify that this changes hasn't messed anything up by running those same tests. Unless there is some auto-loading going on, there will be a failure until `require 'strategies'` is added to the top of the file. Since it's quick, I'll move the next check into a separate strategy.  Now the code is
+
+```
+module Strategies
+  class LessThanTwo
+    def check(number)
+      return number < 2
+    end
+  end
+
+  class IsEven
+    def check(number)
+      return number > 2 && number.even?
+    end
+  end
+end
+```
+
+I created a new transitional file as to make these changes so they can be compared without having to dig through the history.
+
+```
+require 'strategies'
+
+class PrimeTransition
+  def is_prime?(input)
+    return false if Strategies::LessThanTwo.new.check(input)
+    return false if Strategies::IsEven.new.check(input)
+
+    sqrt = Math.sqrt(input)
+    return false if sqrt == sqrt.floor
+
+    (3..(sqrt.floor)).each do |i|
+      return false if (input%i).zero?
+    end
+
+    return true
+  end
+end
+```
 
 

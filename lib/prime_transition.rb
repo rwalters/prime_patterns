@@ -1,10 +1,9 @@
-require 'prime_by_strategy'
 require 'strategies'
 
 class PrimeTransition
   def is_prime?(input)
-    return false if PrimeByStrategy.new(input).is_prime?(Strategies::LessThanTwo.new)
-    return false if PrimeByStrategy.new(input).is_prime?(Strategies::IsEven.new)
+    return false if Strategies::LessThanTwo.new.check(input)
+    return false if Strategies::IsEven.new.check(input)
 
     sqrt = Math.sqrt(input)
     return false if sqrt == sqrt.floor

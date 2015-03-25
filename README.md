@@ -67,7 +67,7 @@ Everything is consistent now, we return false if a given check is true, otherwis
 
 We can start by moving the first check into a strategy, and calling it directly.
 
-```
+```ruby
 module Strategies
   class LessThanTwo
     def check(number)
@@ -76,14 +76,14 @@ module Strategies
   end
 ```
 
-```
+```ruby
   def is_prime?(input)
     return false if Strategies::LessThanTwo.new.check(input)
 ```
 
 Since I had used tests to check the original version, it's easy to verify that this changes hasn't messed anything up by running those same tests. Unless there is some auto-loading going on, there will be a failure until `require 'strategies'` is added to the top of the file. Since it's quick, I'll move the next check into a separate strategy.  Now the code is
 
-```
+```ruby
 module Strategies
   class LessThanTwo
     def check(number)
@@ -101,7 +101,7 @@ end
 
 I created a new transitional file as to make these changes so they can be compared without having to dig through the history.
 
-```
+```ruby
 require 'strategies'
 
 class PrimeTransition

@@ -10,4 +10,11 @@ module Strategies
       return number > 2 && number.even?
     end
   end
+
+  class HasIntegerSquareRoot
+    def check(number)
+      sqrt = Math.sqrt(number)
+      return sqrt == sqrt.floor
+    end
+  end
 end

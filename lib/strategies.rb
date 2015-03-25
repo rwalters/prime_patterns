@@ -17,4 +17,13 @@ module Strategies
       return sqrt == sqrt.floor
     end
   end
+
+  class HasDivisor
+    def check(number)
+      sqrt = Math.sqrt(number).floor
+      return !!(3...sqrt).detect do |i|
+        (number%i).zero?
+      end
+    end
+  end
 end

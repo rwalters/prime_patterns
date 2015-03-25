@@ -121,4 +121,42 @@ class PrimeTransition
 end
 ```
 
+The next two checks aren't much more difficult than the last two, just moving each block of lines into a new strategy and converting the check into the familiar format of calling the new strategy.
 
+```ruby
+    return false if Strategies::HasIntegerSquareRoot.new.check(input)
+    return false if Strategies::HasDivisor.new.check(input)
+```
+
+```ruby
+  class HasIntegerSquareRoot
+    def check(number)
+      sqrt = Math.sqrt(number)
+      return sqrt == sqrt.floor
+    end
+  end
+
+  class HasDivisor
+    def check(number)
+      sqrt = Math.sqrt(number).floor
+      (3..sqrt).each do |i|
+        return true if (number%i).zero?
+      end
+
+      return false
+    end
+  end
+```
+
+All specs pass, but the last strategy is a little different with returning in the middle of the loop and finishing with returning true. We can tighten that up by using `detect` instead of `each`. Detect passes back the element that satisfies the conditional, else `nil`, so I add `!!` to the front to force it into a boolean.
+
+```ruby
+  class HasDivisor
+    def check(number)
+      sqrt = Math.sqrt(number).floor
+      return !!(3...sqrt).detect do |i|
+        (number%i).zero?
+      end
+    end
+  end
+```

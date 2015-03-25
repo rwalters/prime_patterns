@@ -148,7 +148,7 @@ The next two checks aren't much more difficult than the last two, just moving ea
   end
 ```
 
-All specs pass, but the last strategy is a little different with returning in the middle of the loop and finishing with returning true. We can tighten that up by using `detect` instead of `each`. Detect passes back the element that satisfies the conditional, else `nil`, so I add `!!` to the front to force it into a boolean.
+All specs pass, but the last strategy is a little different with returning true in the middle of the loop and finishing with returning false. We can tighten that up, and make it more consistent, by using `detect` instead of `each`. Detect passes back the element that satisfies the conditional, else `nil`, so I add `!!` to the front to force it into a boolean.
 
 ```ruby
   class HasDivisor

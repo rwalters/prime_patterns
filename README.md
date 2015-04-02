@@ -165,7 +165,7 @@ One way to make that strategy more consistent, and possibly more elegant, is by 
 
 We now have a tidy method, all logic packaged up in discrete methods that are completely independent.
 
-```
+```ruby
   def is_prime?(input)
     return false if Strategies::LessThanTwo.new.check(input)
     return false if Strategies::IsEven.new.check(input)
@@ -180,7 +180,7 @@ We won't have to touch the `is_prime?` method, or any of the other strategies, i
 
 Instead, what if we passed these strategies in? In our contrived example, we can have `is_prime?` call a new [subordinate method](http://sourcemaking.com/refactoring/replace-method-with-method-object) and pass in the strategies that way.
 
-```
+```ruby
 class PrimeByStrategy
   def is_prime?(input)
     strategies = [Strategies::LessThanTwo.new,
@@ -200,7 +200,7 @@ end
 
 I'm still not happy with assembling the strategies right here. We have the logic of each of the strategies in the Strategies module, why not move the list of prime strategies there, too?
 
-```
+```ruby
 module Strategies
   PRIME_STRATEGIES = [Strategies::LessThanTwo,
                       Strategies::IsEven,
@@ -210,7 +210,7 @@ module Strategies
 
 And then we can just call on that, and if we add or remove strategies later, our `PrimeByStrategy` doesn't care.
 
-```
+```ruby
 class PrimeByStrategy
   def is_prime?(input)
     return is_prime_by_strategy?(input, Strategies::PRIME_STRATEGIES.map(&:new))
@@ -225,9 +225,9 @@ end
 
 This is looking better, but it seems a little odd to have that one line in the
 `is_prime?` method. We can push those methods back together again, and make the
-^PRIME_STRATEGIES` the default for the method.
+`PRIME_STRATEGIES` the default for the method.
 
-```
+```ruby
 class PrimeByStrategy
   def is_prime?(input, strategies = Strategies::PRIME_STRATEGIES.map(&:new))
     return false if strategies.any?{|s| s.check(input)}

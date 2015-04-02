@@ -26,4 +26,10 @@ module Strategies
       end
     end
   end
+
+  PRIME_STRATEGIES =
+    [Strategies::LessThanTwo,
+     Strategies::IsEven,
+     Strategies::HasIntegerSquareRoot,
+     Strategies::HasDivisor]
 end

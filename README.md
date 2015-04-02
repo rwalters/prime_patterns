@@ -1,7 +1,7 @@
 # Software Design Patterns
 
 
-I recently ran a small workshop about software [design patterns](http://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612), and I had a few examples for some of the most common patterns.  I felt pretty comfortable with the presentation overall, especially where I was able to use [a blog post](http://www.sandimetz.com/blog/2014/9/9/shape-at-the-bottom-of-all-things) by [Sandi Metz](http://www.sandimetz.com/) to illustrate the [Strategy Pattern](http://en.wikipedia.org/wiki/Strategy_pattern). Today I gave a presentation about [code katas](http://codekata.com/): what they are, how they are useful, when you might go over a kata, and showed a few examples. One of the katas that caught my eye today, from [CodeWars](http://www.codewars.com/), was about determining if a given number is prime.
+I recently ran a small workshop about [software design patterns](http://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612), and I had a few examples for some of the most common patterns.  I felt pretty comfortable with the presentation overall, especially where I was able to use [a blog post](http://www.sandimetz.com/blog/2014/9/9/shape-at-the-bottom-of-all-things) by [Sandi Metz](http://www.sandimetz.com/) to illustrate the [Strategy Pattern](http://en.wikipedia.org/wiki/Strategy_pattern). Today I gave a presentation about [code katas](http://codekata.com/): what they are, how they are useful, when you might go over a kata, and showed a few examples. One of the katas that caught my eye today, from [CodeWars](http://www.codewars.com/), was about determining if a given number is prime.
 
 Sandi's example about the rhyme was great, and I'm not going to attempt to improve upon it.  However, using something as simple as whether a number is prime can help make the underlying patterns all the more obvious.  By ridiculously over-engineering something simple, the mechanisms are laid bare and can then be transferred to more realistic, complicated situations.  I'll be using the excuse of discovering if a given number is prime to explore two patterns: the Strategy pattern mentioned earlier, and the [Chain of Responsibility](http://en.wikipedia.org/wiki/Chain-of-responsibility_pattern) pattern.
 
@@ -223,9 +223,7 @@ class PrimeByStrategy
 end
 ```
 
-This is looking better, but it seems a little odd to have that one line in the
-`is_prime?` method. We can push those methods back together again, and make the
-`PRIME_STRATEGIES` the default for the method.
+This is looking better, but it seems a little odd to have that one line in the `is_prime?` method. We can push those methods back together again, and make the `PRIME_STRATEGIES` the default for the method.
 
 ```ruby
 class PrimeByStrategy
@@ -235,3 +233,25 @@ class PrimeByStrategy
   end
 end
 ```
+
+At this point, we're done showing off the strategy pattern. There is just one little thing that has been bothering me. We call `check` on the strategies, but get back a boolean.  I even modified the `HasDivisor` strategy to make sure it explicitly returned a boolean.  In Ruby, we can mark methods that pass back booleans by putting a question mark on the end. We could drop a `?` on there and leave it as `check?`, but giving it a bit more thought, it might be better to make it overall more descriptive.
+
+```ruby
+  class LessThanTwo
+    def not_prime?(number)
+      return number < 2
+    end
+  end
+```
+
+And call it from `is_prime?`
+
+```ruby
+  def is_prime?(input, strategies = Strategies::PRIME_STRATEGIES.map(&:new))
+    return false if strategies.any?{|s| s.not_prime?(input)}
+    return true
+  end
+```
+
+
+We could keep going on other points, such as why I made each strategy a class that is instantiated instead of just using class methods that would be called directly, but perhaps I can go over that in another article.

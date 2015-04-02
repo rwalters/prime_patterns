@@ -7,7 +7,7 @@ Sandi's example about the rhyme was great, and I'm not going to attempt to impro
 
 ## Naive Prime Solution
 
-I created a simple method of discovering if a number is a prime.  I just have a series of rules that perform a series of checks through guard clauses. For example, since 2 is prime, [I have a check to return true for that input](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L3), and since a prime number [has to be greater than 1](http://en.wikipedia.org/wiki/Prime_number), if an input is less than 2, [I return false](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L4). There are then other checks on what is not a prime before we just return true, since the input must be a prime at that point.
+I created a simple method of discovering if a number is a prime.  I just perform a series of checks using guard clauses. For example, since 2 is prime, [I have a check to return true for that input](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L3), and since a prime number [has to be greater than 1](http://en.wikipedia.org/wiki/Prime_number), if an input is less than 2, [I return false](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb#L4). There are then other checks on what is not a prime before we just return true, since the input must be a prime at that point.
 
 ```ruby
   def is_prime?(input)
@@ -74,6 +74,7 @@ module Strategies
       return number < 2
     end
   end
+end
 ```
 
 ```ruby
@@ -81,7 +82,7 @@ module Strategies
     return false if Strategies::LessThanTwo.new.check(input)
 ```
 
-Since I had used tests to check the original version, it's easy to verify that this changes hasn't messed anything up by running those same tests. Unless there is some auto-loading going on, there will be a failure until `require 'strategies'` is added to the top of the file. Since it's quick, I'll move the next check into a separate strategy.  Now the code is
+Since I had used tests to check the original version, it's easy to verify that this change hasn't messed anything up by running those same tests. Unless there is some auto-loading going on, there will be a failure until `require 'strategies'` is added to the top of the file. Since it's quick, I'll move the next check into a separate strategy.  Now the code is
 
 ```ruby
 module Strategies
@@ -99,7 +100,7 @@ module Strategies
 end
 ```
 
-I created a new transitional file as to make these changes so they can be compared without having to dig through the history.
+I created a new transitional file to make these changes so they can be compared without having to dig through the history.
 
 ```ruby
 require 'strategies'
@@ -150,7 +151,7 @@ The next two checks aren't much more difficult than the last two, just moving ea
 
 All specs pass, but the last strategy is a little different. It returns true in the middle of the loop, then finishes up with returning false, where the other strategies just return a conditional.
 
-One way to make that strategy more consistent, and possibly more elegant, is by using `detect` instead of `each`. [Detect](http://ruby-doc.org/core-2.2.1/Enumerable.html#method-i-detect) passes each entry into the block to be tested however you wish, then either returns the first element for which the conditional is true, or else returns `nil`. I also [prepend `!!` to the detect](http://goo.gl/2rPcJH) to force the return into a strict boolean.
+One way to make that strategy more consistent, and possibly [more elegant](http://www.amazon.com/Eloquent-Ruby-Addison-Wesley-Professional-Series/dp/0321584104), is by using `detect` instead of `each`. [The `detect` method](http://ruby-doc.org/core-2.2.1/Enumerable.html#method-i-detect) passes each entry into the block to be tested however you wish, then either returns the first element for which the conditional is true, or else returns `nil`. I also [prepend `!!` to the detect](http://goo.gl/2rPcJH) to force the return into a strict boolean.
 
 ```ruby
   class HasDivisor
@@ -163,7 +164,7 @@ One way to make that strategy more consistent, and possibly more elegant, is by 
   end
 ```
 
-We now have a tidy method, all logic packaged up in discrete methods that are completely independent.
+We now have a tidy method, with all logic packaged up in discrete methods that are completely independent.
 
 ```ruby
   def is_prime?(input)
@@ -175,6 +176,8 @@ We now have a tidy method, all logic packaged up in discrete methods that are co
     return true
   end
 ```
+
+### Passing in Strategies
 
 We won't have to touch the `is_prime?` method, or any of the other strategies, if one of the strategies is later found to be somehow lacking.  However, this isn't quite the "Strategy Pattern". What if we need to add a strategy? Or find we can remove one, for whatever reason? We would have to change this file, and add a new strategy to `lib/strategies.rb` (or wherever the strategies live). This isn't a big deal right now, just modifying two files, but if we were in actual code, we might be using these strategies in numerous places. Having them hardcoded each time would be inconvenient to maintain.
 
@@ -223,7 +226,7 @@ class PrimeByStrategy
 end
 ```
 
-This is looking better, but it seems a little odd to have that one line in the `is_prime?` method. We can push those methods back together again, and make the `PRIME_STRATEGIES` the default for the method.
+This is looking better, but it seems a little odd to have that one line in the `is_prime?` method. We can push those methods back together again, and make the `PRIME_STRATEGIES` constant the default for the method.
 
 ```ruby
 class PrimeByStrategy
@@ -233,6 +236,8 @@ class PrimeByStrategy
   end
 end
 ```
+
+## Epilogue
 
 At this point, we're done showing off the strategy pattern. There is just one little thing that has been bothering me. We call `check` on the strategies, but get back a boolean.  I even modified the `HasDivisor` strategy to make sure it explicitly returned a boolean.  In Ruby, we can mark methods that pass back booleans by putting a question mark on the end. We could drop a `?` on there and leave it as `check?`, but giving it a bit more thought, it might be better to make it overall more descriptive.
 
@@ -252,6 +257,5 @@ And call it from `is_prime?`
     return true
   end
 ```
-
 
 We could keep going on other points, such as why I made each strategy a class that is instantiated instead of just using class methods that would be called directly, but perhaps I can go over that in another article.

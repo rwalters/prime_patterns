@@ -151,13 +151,13 @@ The next two checks aren't much more difficult than the last two, just moving ea
 
 All specs pass, but the last strategy is a little different. It returns true in the middle of the loop, then finishes up with returning false, where the other strategies just return a conditional.
 
-One way to make that strategy more consistent, and possibly [more elegant](http://www.amazon.com/Eloquent-Ruby-Addison-Wesley-Professional-Series/dp/0321584104), is by using `detect` instead of `each`. [The `detect` method](http://ruby-doc.org/core-2.2.1/Enumerable.html#method-i-detect) passes each entry into the block to be tested however you wish, then either returns the first element for which the conditional is true, or else returns `nil`. I also [prepend `!!` to the detect](http://goo.gl/2rPcJH) to force the return into a strict boolean.
+One way to make that strategy more consistent, and possibly [more elegant](http://www.amazon.com/Eloquent-Ruby-Addison-Wesley-Professional-Series/dp/0321584104), is by using `any?` instead of `each`. [The `any?` method](http://ruby-doc.org/core-2.2.1/Enumerable.html#method-i-any-3F) passes each entry into the block to be tested however you wish, then returns `true` if at least one satisfies the conditional is true, or else returns `false` if every element fails the conditional.
 
 ```ruby
   class HasDivisor
     def check(number)
       sqrt = Math.sqrt(number).floor
-      return !!(3...sqrt).detect do |i|
+      return (3...sqrt).any? do |i|
         (number%i).zero?
       end
     end

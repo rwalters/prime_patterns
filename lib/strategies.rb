@@ -21,7 +21,7 @@ module Strategies
   class HasDivisor
     def not_prime?(number)
       sqrt = Math.sqrt(number).floor
-      return !!(3...sqrt).detect do |i|
+      return (3...sqrt).any? do |i|
         (number%i).zero?
       end
     end

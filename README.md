@@ -239,7 +239,7 @@ end
 
 ## Epilogue
 
-At this point, we're done showing off the strategy pattern. There is just one little thing that has been bothering me. We call `check` on the strategies, but get back a boolean.  I even modified the `HasDivisor` strategy to make sure it explicitly returned a boolean.  In Ruby, we can mark methods that pass back booleans by putting a question mark on the end. We could drop a `?` on there and leave it as `check?`, but giving it a bit more thought, it might be better to make it overall more descriptive.
+At this point, we're done showing off the strategy pattern. There is just one little thing that has been bothering me. We call a method called `check` on the strategies, but get back a boolean. In Ruby, we can mark methods that pass back booleans by putting a question mark on the end. We could drop a `?` on there and leave it as `check?`, but that is still rather vague. How about a method called `not_prime?`?
 
 ```ruby
   class LessThanTwo
@@ -257,5 +257,7 @@ And call it from `is_prime?`
     return true
   end
 ```
+
+By naming the method `not_prime?` we indicate that we will be returning a boolean here, and it is more descriptive than the vague `check`, helping remedy my concern from earlier about returning false if a given check is `true`. It is more reasonable now that we would return `false` if the method `not_prime?` is true.
 
 We could keep going on other points, such as why I made each strategy a class that is instantiated instead of just using class methods that would be called directly, but perhaps I can go over that in another article.

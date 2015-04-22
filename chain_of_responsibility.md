@@ -1,5 +1,8 @@
+# Software Design Patterns
 
-[As I previously covered](https://github.com/rwalters/prime_patterns/blob/master/strategy_pattern.md), I created a simple method of determining if a number is prime using a series of rules. 
+this is the second article in a series on software design patterns, [the first](https://github.com/rwalters/prime_patterns/blob/master/strategy_pattern.md) covering the [Strategy Pattern](http://en.wikipedia.org/wiki/Strategy_pattern). This time, I'll be going over something called the [Chain of Responsibility](http://en.wikipedia.org/wiki/Chain-of-responsibility_pattern).
+
+As I previously covered, I created a simple method of determining if a number is prime using a series of rules.
 
 ```ruby
   def is_prime?(input)

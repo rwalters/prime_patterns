@@ -1,4 +1,4 @@
-require 'prime_by_strategy'
+require_relative '../lib/prime_by_strategy'
 
 describe PrimeByStrategy do
   subject { described_class.new.is_prime?(input) }

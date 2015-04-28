@@ -1,4 +1,4 @@
-require 'strategies'
+require_relative 'strategies'
 
 class PrimeByStrategy
   def is_prime?(input, strategies = Strategies::PRIME_STRATEGIES.map(&:new))

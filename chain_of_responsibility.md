@@ -22,6 +22,12 @@ I used a very simple [kata](http://www.codewars.com/) to explain the strategy pa
   end
 ```
 
-Each rule checks if the input is not prime, so if the check is `true`, we return `false`, the number being tested is not prime. If all rules are false, we are left with a prime number.
+Each rule checks if the input is not prime, so if the check is `true` then the number being tested is not prime and we return `false`. If all rules are false, we are left with a prime number.
 
 ## Chain of Responsibility Pattern
+
+In my [previous article](https://github.com/rwalters/prime_patterns/blob/master/strategy_pattern.md), I showed how to move these sequential checks into an array of strategies that we could use as part of the Strategy Pattern. This time, I will use these to implement a form of the Chain of Responsibility pattern.
+
+Instead of calling these "strategies", we will call them "processors". And, rather than handle an array of these processors up front, we will let each one handle the decision. Each processor will either know the answer, or pass the decision on to another object to make the decision. In this way, we can potentially have a complex tree of decisions our program will make to determine an answer, much more flexible and powerful than a straight array of strategies to be applied.
+
+This is absolute overkill for our example, of course, and we will end up with a linear path of decisions, but this will allow us to explore the concepts in this pattern without having to actually deal with a whole tree of decisions.

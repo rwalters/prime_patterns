@@ -31,3 +31,113 @@ In my [previous article](https://github.com/rwalters/prime_patterns/blob/master/
 Instead of calling these "strategies", we will call them "processors". And, rather than handle an array of these processors up front, we will let each one handle the decision. Each processor will either know the answer, or pass the decision on to another object to make the decision. In this way, we can potentially have a complex tree of decisions our program will make to determine an answer, much more flexible and powerful than a straight array of strategies to be applied.
 
 This is absolute overkill for our example, of course, and we will end up with a linear path of decisions, but this will allow us to explore the concepts in this pattern without having to actually deal with a whole tree of decisions.
+
+## Converting to a Chain of Responsibility
+
+We'll start with our naive solution, then move each check into a processor class, and call that new object to perform the check. As we add each check to a processor, we'll have the last processor hand off the decision to the new object.
+
+The starting point is the same as the code we started with on our exploration of the Strategy Pattern.
+
+```ruby
+  def is_prime?(input)
+    return false if input < 2
+    return false if input > 2 && input.even?
+
+    sqrt = Math.sqrt(input)
+    return false if sqrt == sqrt.floor
+
+    (3..(sqrt.floor)).each do |i|
+      return false if (input%i).zero?
+    end
+
+    return true
+  end
+```
+
+The first check is whether the input is less than two. But where do we move that?
+
+### Processor Classes
+
+We need something to hold the check, and also hold a pointer on to the next processor along with logic on when to pass the decision along in the chain.
+
+The first pass looks almost identical to our first [Strategy](https://github.com/rwalters/prime_patterns/blob/master/lib/strategies.rb#L2):
+
+```ruby
+module Processors
+  class LessThanTwo
+    def not_prime?(number)
+      return number < 2
+    end
+  end
+end
+```
+
+However, this doesn't have any logic on when to pass the decision along in the chain, nor any way to specify a successor. We can add the logic to `not_prime?`, just sort of guessing at what we need at the moment and waiting for specifics if the need should arise:
+
+```ruby
+    def not_prime?(number)
+      if number < 2
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+```
+
+It looks like we need a `successor` of some sort, perhaps a variable that holds a Processor object. Even better, we can make it a method we can call that will determine the Processor we need, and return an instance of it for us to use:
+
+```ruby
+    def successor
+      nil
+    end
+```
+
+We don't actually want to return `nil`, that would just throw an error when we try to call `not_prime?` on it. We could add a test to see if our successor is `nil`, and return false if that's the case:
+
+```ruby
+    def not_prime?(number)
+      if number < 2
+        true
+      else
+        return successor.not_prime?(number) unless sucessor.nil?
+        false
+      end
+    end
+```
+
+But that `unless` inside an `if` just doesn't look right. Instead of nesting `if`-s and `unless`-s, let's create a default processor that just returns false for `not_prime?`:
+
+```ruby
+module Processors
+  class LessThanTwo
+    def not_prime?(number)
+      if number < 2
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+
+    def successor
+      Default.new
+    end
+  end
+
+  class Default
+    def not_prime?(number)
+      false
+    end
+  end
+end
+```
+
+Now, we'll call that just like we called the Strategy before:
+
+```ruby
+require 'processors'
+
+class PrimeByChain
+  def is_prime?(input)
+    return false if Processors::LessThanTwo.new.not_prime?(input)
+    return false if input > 2 && input.even?
+```

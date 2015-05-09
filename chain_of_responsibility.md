@@ -141,3 +141,44 @@ class PrimeByChain
     return false if Processors::LessThanTwo.new.not_prime?(input)
     return false if input > 2 && input.even?
 ```
+
+This passes our tests without a complaint, so we move on to the next check:
+
+```ruby
+  class IsEven
+    def not_prime?(number)
+      if input > 2 && input.even?
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+
+    def successor
+      Default.new
+    end
+  end
+```
+
+We will use the `Default` processor as the successor, and then change `LessThanTwo`:
+
+```ruby
+  class LessThanTwo
+    def successor
+      Processors::isEven.new
+    end
+  end
+```
+
+Next, instead of changing `return false if Processors::IsEven.new.not_prime?(input)`, we just remove it:
+
+```ruby
+class PrimeByChain
+  def is_prime?(input)
+    return false if Processors::LessThanTwo.new.not_prime?(input)
+
+    sqrt = Math.sqrt(input)
+    return false if sqrt == sqrt.floor
+```
+
+Our tests pass, since the `LessThanTwo` processor passes responsibility on to `IsEven` all on its own.

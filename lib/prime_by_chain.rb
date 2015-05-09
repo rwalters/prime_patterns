@@ -3,7 +3,6 @@ require 'processors'
 class PrimeByChain
   def is_prime?(input)
     return false if Processors::LessThanTwo.new.not_prime?(input)
-    return false if input > 2 && input.even?
 
     sqrt = Math.sqrt(input)
     return false if sqrt == sqrt.floor

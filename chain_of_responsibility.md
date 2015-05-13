@@ -182,3 +182,97 @@ class PrimeByChain
 ```
 
 Our tests pass, since the `LessThanTwo` processor passes responsibility on to `IsEven` all on its own.
+
+## Finishing Up
+
+We repeat these steps until we end up with:
+
+```ruby
+class PrimeByChain
+  def is_prime?(input)
+    return false if Processors::LessThanTwo.new.not_prime?(input)
+
+    return true
+  end
+end
+```
+
+with the Processors:
+
+```ruby
+module Processors
+  class LessThanTwo
+    def not_prime?(number)
+      if number < 2
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+
+    def successor
+      Processors::IsEven.new
+    end
+  end
+
+  class IsEven
+    def not_prime?(number)
+      if number > 2 && number.even?
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+
+    def successor
+      Processors::HasSquareRoot.new
+    end
+  end
+
+  class HasSquareRoot
+    def not_prime?(number)
+      sqrt = Math.sqrt(number)
+      if sqrt == sqrt.floor
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+
+    def successor
+      Processors::HasIntegerDivisor.new
+    end
+  end
+
+  class HasIntegerDivisor
+    def not_prime?(number)
+      if divisor_found(number)
+        true
+      else
+        successor.not_prime?(number)
+      end
+    end
+
+    def successor
+      Default.new
+    end
+
+    private
+
+    def divisor_found(number)
+      sqrt = Math.sqrt(number)
+      (3...sqrt).any? do |i|
+        (number%i).zero?
+      end
+    end
+  end
+
+  class Default
+    def not_prime?(number)
+      false
+    end
+  end
+end
+```
+
+One thing I want to note here is the addition of the private method `def divisor_found?` to `HasIntegerDivisor`. I wanted to keep the flow going, and line count down, in the primary `not_prime?` method, so I moved the `any?` check down out of the way.

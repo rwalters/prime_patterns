@@ -34,7 +34,7 @@ This is absolute overkill for our example, of course, and we will end up with a 
 
 ## Converting to a Chain of Responsibility
 
-We'll start with our naive solution, then move each check into a processor class, and call that new object to perform the check. As we add each check to a processor, we'll have the last processor hand off the decision to the new object.
+We'll start with our naive solution, then move each check into a `Processor` class, and call that new object to perform the check. As we add each check to a processor, we'll have the last processor hand off the decision to the new object.
 
 The starting point is the same as the code we started with on our exploration of the Strategy Pattern.
 
@@ -58,7 +58,7 @@ The first check is whether the input is less than two. But where do we move that
 
 ### Processor Classes
 
-We need something to hold the check, and also hold a pointer on to the next processor along with logic on when to pass the decision along in the chain.
+We need something to hold the check, and also hold a pointer on to the next `Processor` along with logic on when to pass the decision along in the chain.
 
 The first pass looks almost identical to our first [Strategy](https://github.com/rwalters/prime_patterns/blob/master/lib/strategies.rb#L2):
 
@@ -72,6 +72,8 @@ module Processors
 end
 ```
 
+#### LessThanTwo
+
 However, this doesn't have any logic on when to pass the decision along in the chain, nor any way to specify a successor. We can add the logic to `not_prime?`, just sort of guessing at what we need at the moment and waiting for specifics if the need should arise:
 
 ```ruby
@@ -84,7 +86,7 @@ However, this doesn't have any logic on when to pass the decision along in the c
     end
 ```
 
-It looks like we need a `successor` of some sort, perhaps a variable that holds a Processor object. Even better, we can make it a method we can call that will determine the Processor we need, and return an instance of it for us to use:
+It looks like we need a `successor` of some sort, perhaps a variable that holds a `Processor` object. Even better, we can make it a method we can call that will determine the `Processor` we need, and return an instance of it for us to use:
 
 ```ruby
     def successor
@@ -105,7 +107,7 @@ We don't actually want to return `nil`, that would just throw an error when we t
     end
 ```
 
-But that `unless` inside an `if` just doesn't look right. Instead of nesting `if`-s and `unless`-s, let's create a default processor that just returns false for `not_prime?`:
+But that `unless` inside an `if` just doesn't look right. Instead of nesting `if`-s and `unless`-s, let's create a default `Processor` that just returns false for `not_prime?`:
 
 ```ruby
 module Processors
@@ -144,6 +146,8 @@ class PrimeByChain
 
 This passes our tests without a complaint, so we move on to the next check:
 
+#### IsEven
+
 ```ruby
   class IsEven
     def not_prime?(number)
@@ -160,17 +164,17 @@ This passes our tests without a complaint, so we move on to the next check:
   end
 ```
 
-We will use the `Default` processor as the successor, and then change `LessThanTwo`:
+We will use `Default` as the successor on `IsEven`, and then use `IsEven` in the `successor` for `LessThanTwo`:
 
 ```ruby
   class LessThanTwo
     def successor
-      Processors::isEven.new
+      Processors::IsEven.new
     end
   end
 ```
 
-Next, instead of changing `return false if Processors::IsEven.new.not_prime?(input)`, we just remove it:
+Next, instead of changing `return false if input > 2 && input.even?` to use `Processors::IsEven`, we just remove the line:
 
 ```ruby
 class PrimeByChain
@@ -185,7 +189,7 @@ Our tests pass, since the `LessThanTwo` processor passes responsibility on to `I
 
 ## Finishing Up
 
-We repeat these steps until we end up with:
+We repeat these steps until we end up with only two lines in `is_prime?`:
 
 ```ruby
 class PrimeByChain
@@ -197,33 +201,11 @@ class PrimeByChain
 end
 ```
 
-with the Processors:
+We move the last two checks into their own `Processor` classes, and update the `successor` for `IsEven`:
 
 ```ruby
 module Processors
-  class LessThanTwo
-    def not_prime?(number)
-      if number < 2
-        true
-      else
-        successor.not_prime?(number)
-      end
-    end
-
-    def successor
-      Processors::IsEven.new
-    end
-  end
-
   class IsEven
-    def not_prime?(number)
-      if number > 2 && number.even?
-        true
-      else
-        successor.not_prime?(number)
-      end
-    end
-
     def successor
       Processors::HasSquareRoot.new
     end
@@ -276,3 +258,13 @@ end
 ```
 
 One thing I want to note here is the addition of the private method `def divisor_found?` to `HasIntegerDivisor`. I wanted to keep the flow going, and line count down, in the primary `not_prime?` method, so I moved the `any?` check down out of the way.
+
+## Epilogue
+
+At the end of the article on the Strategy pattern, we were also left with just two lines in our `is_prime?` method, which may make it look very similar to the Chain of Responsibility we just went over here. The two biggest differences I wanted to highlight here both involve increased flexibility.
+
+First, we can add and remove `Processors` on the fly. If we had a range of `Processor` classes from which to choose, and the `successor` pulled from a database, we wouldn't need to change a single line of code to swap out processor objects.
+
+Second, we can put logic in the `successor` method to branch out in a way we weren't easily able to in the Strategy pattern. This relates to the first point, being able to swap on the fly, so that we can even loop back to an earlier `Processor` and take a different branch.
+
+Unfortunately, this can lend to dense complexity in unraveling the steps involved in a particular decision. This can be ameliorated by logging or some form of [a chain of custody](http://en.wikipedia.org/wiki/Chain_of_custody), but is still a factor to consider when looking to apply this pattern.

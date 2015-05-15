@@ -4,7 +4,7 @@ This is the second article in a series on software design patterns, continuing f
 
 ## A Simple Example
 
-I used a very simple [kata](http://www.codewars.com/) to explain the strategy pattern, and I'll use that same prime kata to illustrate an implementation of the Chain of Responsibility Pattern. The [naive solution](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb) I created determines whether a number is prime using a series of rules testing if a given number is _not_ prime.
+We'll be using the same [simple kata](http://www.codewars.com/) in our exploration of the Chain of Responsibility Pattern that we used to explore the Strategy Pattern. The [naive solution](https://github.com/rwalters/prime_patterns/blob/master/lib/prime_naive.rb) simply determines whether a number is prime by using a series of rules testing whether a given number is _not_ prime:
 
 ```ruby
   def is_prime?(input)
@@ -22,7 +22,7 @@ I used a very simple [kata](http://www.codewars.com/) to explain the strategy pa
   end
 ```
 
-Each rule checks if the input is not prime, so if the check is `true` then the number being tested is not prime and we return `false`. If all rules are false, we are left with a prime number.
+Each rule checks if the input is not prime, and so if the check is `true`, then the number being tested is not prime and we return `false`. If all rules are false, we are left with a prime number.
 
 ## Chain of Responsibility Pattern
 
@@ -30,35 +30,25 @@ In my [previous article](https://github.com/rwalters/prime_patterns/blob/master/
 
 Instead of calling these "strategies", we will call them "processors". And, rather than handle an array of these processors up front, we will let each one handle the decision. Each processor will either know the answer, or pass the decision on to another object to make the decision. In this way, we can potentially have a complex tree of decisions our program will make to determine an answer, much more flexible and powerful than a straight array of strategies to be applied.
 
-This is absolute overkill for our example, of course, and we will end up with a linear path of decisions, but this will allow us to explore the concepts in this pattern without having to actually deal with a whole tree of decisions.
+This is absolute overkill for our example, of course. We will only need a linear path of decisions, but this will allow us to explore the concepts in this pattern without having to actually deal with a whole tree of decisions.
 
 ## Converting to a Chain of Responsibility
 
-We'll start with our naive solution, then move each check into a `Processor` class, and call that new object to perform the check. As we add each check to a processor, we'll have the last processor hand off the decision to the new object.
+Briefly, we'll start with our naive solution, then move each check into a `Processor` class and call that new object to perform the check. As we add each check to a processor, we'll have the last processor hand off the decision to the new object.
 
-The starting point is the same as the code we started with on our exploration of the Strategy Pattern.
+The starting point is the same as the code we started with on our exploration of the Strategy Pattern: our first `if` statement:
 
 ```ruby
   def is_prime?(input)
     return false if input < 2
     return false if input > 2 && input.even?
-
-    sqrt = Math.sqrt(input)
-    return false if sqrt == sqrt.floor
-
-    (3..(sqrt.floor)).each do |i|
-      return false if (input%i).zero?
-    end
-
-    return true
-  end
 ```
 
 The first check is whether the input is less than two. But where do we move that?
 
 ### Processor Classes
 
-We need something to hold the check, and also hold a pointer on to the next `Processor` along with logic on when to pass the decision along in the chain.
+We need something to hold the check, and also hold a way to call the next `Processor` along with logic on when to pass the decision along in the chain.
 
 The first pass looks almost identical to our first [Strategy](https://github.com/rwalters/prime_patterns/blob/master/lib/strategies.rb#L2):
 
@@ -94,7 +84,7 @@ It looks like we need a `successor` of some sort, perhaps a variable that holds 
     end
 ```
 
-We don't actually want to return `nil`, that would just throw an error when we try to call `not_prime?` on it. We could add a test to see if our successor is `nil`, and return false if that's the case:
+We don't actually want to return `nil`, though, because that would just throw an error when we try to call `not_prime?` on it. We could add a test to see if our successor is `nil`, and return false if that's the case:
 
 ```ruby
     def not_prime?(number)
@@ -144,7 +134,7 @@ class PrimeByChain
     return false if input > 2 && input.even?
 ```
 
-This passes our tests without a complaint, so we move on to the next check:
+This passes our tests without a complaint, so we move on to the next check.
 
 #### IsEven
 
@@ -164,7 +154,7 @@ This passes our tests without a complaint, so we move on to the next check:
   end
 ```
 
-We will use `Default` as the successor on `IsEven`, and then use `IsEven` in the `successor` for `LessThanTwo`:
+We will use `Default` as the successor on `IsEven`, and then change the `successor` for `LessThanTwo` to create an `IsEven` object to use:
 
 ```ruby
   class LessThanTwo
@@ -187,9 +177,9 @@ class PrimeByChain
 
 Our tests pass, since the `LessThanTwo` processor passes responsibility on to `IsEven` all on its own.
 
-## Finishing Up
+## Rinse and Repeat
 
-We repeat these steps until we end up with only two lines in `is_prime?`:
+We repeat these steps for the last two checks, ending up with only two lines in `is_prime?`:
 
 ```ruby
 class PrimeByChain
@@ -201,7 +191,7 @@ class PrimeByChain
 end
 ```
 
-We move the last two checks into their own `Processor` classes, and update the `successor` for `IsEven`:
+We move the last two checks into their own `Processor` classes, and set the `successor` methods appropriately:
 
 ```ruby
 module Processors
@@ -257,14 +247,14 @@ module Processors
 end
 ```
 
-One thing I want to note here is the addition of the private method `def divisor_found?` to `HasIntegerDivisor`. I wanted to keep the flow going, and line count down, in the primary `not_prime?` method, so I moved the `any?` check down out of the way.
+One thing I want to note here is the addition of the private method `def divisor_found?` to `HasIntegerDivisor`. I wanted to keep the flow going in the `not_prime?` method, so I moved the `any?` check down out of the way.
 
 ## Epilogue
 
-At the end of the article on the Strategy pattern, we were also left with just two lines in our `is_prime?` method, which may make it look very similar to the Chain of Responsibility we just went over here. The two biggest differences I wanted to highlight here both involve increased flexibility.
+At the end of the article on the Strategy pattern, we were also left with just two lines in our `is_prime?` method, which may make it look very similar to our Chain of Responsibility solution here. The two biggest differences I wanted to highlight here both involve increased flexibility.
 
-First, we can add and remove `Processors` on the fly. If we had a range of `Processor` classes from which to choose, and the `successor` pulled from a database, we wouldn't need to change a single line of code to swap out processor objects.
+First, we can add and remove `Processors` on the fly. If we had a range of `Processor` classes from which to choose, and the `successor` pulled from a database, we wouldn't need to change a single line of code to swap out processor objects. We could also have a `Processor` that somehow alerts someone and then waits for that user to respond with an answer, possibly handing the decision off to yet another user.  This would allow an arbitrary number of users to be involved in the decision.
 
-Second, we can put logic in the `successor` method to branch out in a way we weren't easily able to in the Strategy pattern. This relates to the first point, being able to swap on the fly, so that we can even loop back to an earlier `Processor` and take a different branch.
+Second, we can put logic in the `successor` method to branch out in a way we weren't easily able to in the Strategy pattern. This relates to the first point, being able to swap on the fly, so that we can even loop back to an earlier `Processor` and take a different branch. We could even call two or more `Processors`, and whichever answers first is the 'winner' of the decision tree.
 
 Unfortunately, this can lend to dense complexity in unraveling the steps involved in a particular decision. This can be ameliorated by logging or some form of [a chain of custody](http://en.wikipedia.org/wiki/Chain_of_custody), but is still a factor to consider when looking to apply this pattern.

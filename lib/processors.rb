@@ -1,5 +1,12 @@
 module Processors
-  class LessThanTwo
+
+  class AbstractProcessor
+    def successor
+      EXECUTION_PLAN.fetch(self.class).call
+    end
+  end
+
+  class LessThanTwo < AbstractProcessor
     def not_prime?(number)
       if number < 2
         true
@@ -7,13 +14,11 @@ module Processors
         successor.not_prime?(number)
       end
     end
-
-    def successor
-      Processors::IsEven.new
-    end
   end
 
-  class IsEven
+  MAIN = LessThanTwo
+
+  class IsEven < AbstractProcessor
     def not_prime?(number)
       if number > 2 && number.even?
         true
@@ -21,13 +26,9 @@ module Processors
         successor.not_prime?(number)
       end
     end
-
-    def successor
-      Processors::HasSquareRoot.new
-    end
   end
 
-  class HasSquareRoot
+  class HasSquareRoot < AbstractProcessor
     def not_prime?(number)
       sqrt = Math.sqrt(number)
       if sqrt == sqrt.floor
@@ -36,23 +37,15 @@ module Processors
         successor.not_prime?(number)
       end
     end
-
-    def successor
-      Processors::HasIntegerDivisor.new
-    end
   end
 
-  class HasIntegerDivisor
+  class HasIntegerDivisor < AbstractProcessor
     def not_prime?(number)
       if divisor_found?(number)
         true
       else
         successor.not_prime?(number)
       end
-    end
-
-    def successor
-      Default.new
     end
 
     private
@@ -70,4 +63,23 @@ module Processors
       false
     end
   end
+
+  EXECUTION_PLAN = {
+    LessThanTwo       => -> do
+      IsEven.new
+    end,
+
+    IsEven            => -> do
+      Processors::HasSquareRoot.new
+    end,
+
+    HasSquareRoot     => -> do
+      Processors::HasIntegerDivisor.new
+    end,
+
+    HasIntegerDivisor => -> do
+      Default.new
+    end,
+  }
+
 end

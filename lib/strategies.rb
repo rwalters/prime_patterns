@@ -1,27 +1,27 @@
 module Strategies
-  class LessThanTwo
-    def not_prime?(number)
-      return number < 2
+  class LessThanTwo < Struct.new(:number)
+    def not_prime?
+      number < 2
     end
   end
 
-  class IsEven
-    def not_prime?(number)
-      return number > 2 && number.even?
+  class IsEven < Struct.new(:number)
+    def not_prime?
+      number > 2 && number.even?
     end
   end
 
-  class HasIntegerSquareRoot
-    def not_prime?(number)
+  class HasIntegerSquareRoot < Struct.new(:number)
+    def not_prime?
       sqrt = Math.sqrt(number)
-      return sqrt == sqrt.floor
+      sqrt == sqrt.floor
     end
   end
 
-  class HasDivisor
-    def not_prime?(number)
+  class HasDivisor < Struct.new(:number)
+    def not_prime?
       sqrt = Math.sqrt(number).floor
-      return (3...sqrt).any? do |i|
+      (3...sqrt).any? do |i|
         (number%i).zero?
       end
     end
